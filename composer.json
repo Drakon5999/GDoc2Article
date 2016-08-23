@@ -1,4 +1,5 @@
 {
+    "name":"Drakon5999/GDoc2Article",
     "require": {
         "google/apiclient": "^2.0"
     }
