@@ -1,0 +1,5 @@
+vendor/
+cache/
+data/
+bower_components/
+phpinfo/
