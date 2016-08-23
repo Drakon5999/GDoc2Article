@@ -3,7 +3,8 @@
     "require": {
         "google/apiclient": "~2",
         "infrajs/router":"~1",
-        "infrajs/path":"~1"
+        "infrajs/path":"~1",
+		"infrajs/config":"~1"
     },
     "autoload":{
         "psr-4":{
