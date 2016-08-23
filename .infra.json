@@ -1,3 +1,4 @@
 {
-	"update":"update.php"
+	"update":"update.php",
+	"certificate":"~client_secret.json"
 }
