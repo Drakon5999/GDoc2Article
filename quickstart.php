@@ -1,6 +1,13 @@
-
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
+use infrajs\router\Router;
+use drakon5999\gdoc2article\GoogleDocs;
+
+if (!is_file('vendor/autoload.php')) {
+	chdir('../../../');
+	require_once('vendor/autoload.php');
+	Router::init();
+}
+
 
 
 define('APPLICATION_NAME', 'Drive API PHP Quickstart');
@@ -46,13 +53,7 @@ function buildTree(&$dirTree, $service, $path=__DIR__ ."/cache/articles/"){
 	}
 }
 
-// инициализация
-if (!is_dir(__DIR__ .'/cache')) {
-	mkdir(__DIR__ .'/cache');
-}
-if (!is_dir(__DIR__ .'/cache/articles')) {
-	mkdir(__DIR__ .'/cache/articles');
-}
+
 
 // Get the API client and construct the service object.
 $client = getClient();
