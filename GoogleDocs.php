@@ -22,7 +22,6 @@ define('MIME_HTML', 'text/html');
 $conf = Config::get('gdoc2article');
 putenv("GOOGLE_APPLICATION_CREDENTIALS=".Path::resolve($conf['certificate']));
 
-
 class GoogleDocs {
 	/**
 	 * Returns an authorized API client.
@@ -58,6 +57,27 @@ class GoogleDocs {
 		}
 		$childs = GoogleDocs::getChildren($rootDirList[0]['id'], $service);
 		GoogleDocs::buildTree($childs, $service, $dir);
+	}
+	public static function updateArticle($id, $dir)
+	{
+		// Get the API client and construct the service object.
+		Path::mkdir($dir);
+		$client = GoogleDocs::getClient();
+		$service = new \Google_Service_Drive($client);
+		$fileExport = $service->files->export($id, MIME_HTML);
+		$fileContent = $fileExport->getBody();
+		file_put_contents(Path::resolve($dir.$id.".html"), $fileContent);
+		return $fileContent;
+	}
+	public static function getArticle($id, $dir)
+	{
+		// Get the API client and construct the service object.
+		Path::mkdir($dir);
+		if (file_exists(Path::resolve($dir.$id.".html"))) {
+			return file_get_contents(Path::resolve($dir.$id.".html"));
+		} else {
+			return GoogleDocs::updateArticle($id, $dir);
+		}
 	}
 	public static function getChildren($parentID, $service){
 		$childrenParams = array(
