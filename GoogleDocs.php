@@ -38,6 +38,7 @@ class GoogleDocs {
 	public static function getArticle($id, $dir)
 	{
 		// Get the API client and construct the service object.
+
 		$html = Access::cache(__FILE__.'getArticle', function () use ($id) {
 			$client = GoogleDocs::getClient();
 			$service = new \Google_Service_Drive($client);
