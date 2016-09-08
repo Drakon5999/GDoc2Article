@@ -4,7 +4,10 @@
         "google/apiclient": "~2",
         "infrajs/router":"~1",
         "infrajs/path":"~1",
-		"infrajs/config":"~1"
+		"infrajs/config":"~1",
+        "infrajs/access":"~1",
+        "kevintweber/groundskeeper":"~0.1",
+        "adevelop/htmlcleaner":"~1"
     },
     "autoload":{
         "psr-4":{

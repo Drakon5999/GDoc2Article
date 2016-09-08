@@ -5,6 +5,7 @@ use Google_Service_Drive;
 use infrajs\path\Path;
 use infrajs\config\Config;
 use infrajs\router\Router;
+use infrajs\access\Access;
 use drakon5999\gdoc2article\GoogleDocs;
 
 if (!is_file('vendor/autoload.php')) {
@@ -12,7 +13,6 @@ if (!is_file('vendor/autoload.php')) {
 	require_once('vendor/autoload.php');
 	Router::init();
 }
-
 
 define('APPLICATION_NAME', 'Drive API PHP Quickstart');
 define('MIME_DIR', 'application/vnd.google-apps.folder');
@@ -34,6 +34,40 @@ class GoogleDocs {
 		$client->setScopes(Google_Service_Drive::DRIVE);
 
 		return $client;
+	}
+	public static function getArticle($id, $dir)
+	{
+		// Get the API client and construct the service object.
+		$html = Access::cache(__FILE__.'getArticle', function () use ($id) {
+			$client = GoogleDocs::getClient();
+			$service = new \Google_Service_Drive($client);
+			$fileExport = $service->files->export($id, MIME_HTML);
+			$fileContent = $fileExport->getBody();
+			return $fileContent;
+		});
+		return $html;
+	}
+
+	
+
+	//FOLDER
+	public static function buildTree(&$dirTree, $service, $path) {
+		
+		Path::mkdir($path);
+		foreach ($dirTree as $id => &$subTree) {
+			if ($subTree["mimeType"] == MIME_DIR) {
+				$subTree["children"] = GoogleDocs::getChildren($subTree['id'], $service);
+				Path::mkdir($path.$subTree['name'].'/');
+
+				GoogleDocs::buildTree($subTree["children"], $service, $path.$subTree['name']."/");
+			} else if ($subTree["mimeType"] == MIME_DOC) {
+				$fileExport = $service->files->export($subTree['id'], MIME_HTML);
+				//print_r(get_class_methods(get_class($fileExport)));
+				
+				$src = Path::theme($path);
+				file_put_contents($src.Path::tofs($subTree['name']).".html", $fileExport->getBody());
+			}
+		}
 	}
 	public static function export($googleDir, $dir)
 	{
@@ -58,51 +92,12 @@ class GoogleDocs {
 		$childs = GoogleDocs::getChildren($rootDirList[0]['id'], $service);
 		GoogleDocs::buildTree($childs, $service, $dir);
 	}
-	public static function updateArticle($id, $dir)
-	{
-		// Get the API client and construct the service object.
-		Path::mkdir($dir);
-		$client = GoogleDocs::getClient();
-		$service = new \Google_Service_Drive($client);
-		$fileExport = $service->files->export($id, MIME_HTML);
-		$fileContent = $fileExport->getBody();
-		file_put_contents(Path::resolve($dir.$id.".html"), $fileContent);
-		return $fileContent;
-	}
-	public static function getArticle($id, $dir)
-	{
-		// Get the API client and construct the service object.
-		Path::mkdir($dir);
-		if (file_exists(Path::resolve($dir.$id.".html"))) {
-			return file_get_contents(Path::resolve($dir.$id.".html"));
-		} else {
-			return GoogleDocs::updateArticle($id, $dir);
-		}
-	}
 	public static function getChildren($parentID, $service){
 		$childrenParams = array(
 		  'q' => '"'.$parentID.'" in parents'
 		);
 		$list = $service->files->listFiles($childrenParams);
 		return $list->getFiles();
-	}
-	public static function buildTree(&$dirTree, $service, $path) {
-		
-		Path::mkdir($path);
-		foreach ($dirTree as $id => &$subTree) {
-			if ($subTree["mimeType"] == MIME_DIR) {
-				$subTree["children"] = GoogleDocs::getChildren($subTree['id'], $service);
-				Path::mkdir($path.$subTree['name'].'/');
-
-				GoogleDocs::buildTree($subTree["children"], $service, $path.$subTree['name']."/");
-			} else if ($subTree["mimeType"] == MIME_DOC) {
-				$fileExport = $service->files->export($subTree['id'], MIME_HTML);
-				//print_r(get_class_methods(get_class($fileExport)));
-				
-				$src = Path::theme($path);
-				file_put_contents($src.Path::tofs($subTree['name']).".html", $fileExport->getBody());
-			}
-		}
 	}
 }
 
