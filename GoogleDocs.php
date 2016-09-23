@@ -3,10 +3,8 @@ namespace drakon5999\gdoc2article;
 use Google_Client;
 use Google_Service_Drive;
 use infrajs\path\Path;
-use infrajs\config\Config;
 use infrajs\router\Router;
 use infrajs\access\Access;
-use drakon5999\gdoc2article\GoogleDocs;
 use infrajs\rubrics\Rubrics;
 use Groundskeeper\Groundskeeper;
 use infrajs\view\View;
@@ -18,16 +16,20 @@ if (!is_file('vendor/autoload.php')) {
 	Router::init();
 }
 
-$conf = Config::get('gdoc2article');
-putenv("GOOGLE_APPLICATION_CREDENTIALS=".Path::resolve($conf['certificate']));
+
 
 class GoogleDocs {
+	public static $conf = array(
+		'production' => 'kemppi-nn.ru', //Адрес продакшина, для замены ссылок из гуглдокс на ссылки относительно корня сайта
+		'certificate' => '~client_secret.json' //Адрес файла с авторизацией гугла
+	);
 	/**
 	 * Returns an authorized API client.
 	 * @return Google_Client the authorized client object
 	 */
 	public static function getClient() 
 	{
+		putenv("GOOGLE_APPLICATION_CREDENTIALS=".Path::resolve(static::$conf['certificate']));
 		$client = new Google_Client();
 		$client->useApplicationDefaultCredentials();
 		$client->setScopes(Google_Service_Drive::DRIVE);
@@ -73,11 +75,14 @@ class GoogleDocs {
 		//$html = preg_replace('/\s<\//', '</', $html);//Удаляем пробел перед закрывающим тегом <a>ссылки </a> 
 
 
-
-		//$html = preg_replace('/https:\/\/www.google.com\/url\?q=http','',$html);
+		$host = View::getHost();
+		$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'([^"]*)&amp;sa=[^"]*/','$1',$html);
 		//https://www.google.com/url?q=https://kemppi-nn.ru/contacts&amp;sa=D&amp;ust=1474575413967000&amp;usg=AFQjCNEMpDDy_ykh9PcNwX14uTdVZ-zb4A
-
-
+		$conf = GoogleDocs::$conf;
+		if ($conf['production']) {
+			$host = $conf['production'];
+			$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'([^"]*)&amp;sa=[^"]*/','$1',$html);
+		}
 		$html = Rubrics::parse($html);
 		return $html;
 	}
@@ -118,7 +123,7 @@ class GoogleDocs {
 
 		if (count($rootDirList) != 1) {
 
-			$conf = Config::get('gdoc2article');
+			$conf = static::$conf;
 			//Обработка ошибок ленивым способом, текст сообщения внутри функции, возвращённая любая строка это значит ошибка.
 			return 'Папка '.$googleDir.' не найдена. У авторизованного пользователя. '.$conf['certificate'];
 		}
@@ -133,8 +138,4 @@ class GoogleDocs {
 		return $list->getFiles();
 	}
 }
-
-
-
-
 

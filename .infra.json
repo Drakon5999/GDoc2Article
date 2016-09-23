@@ -1,4 +1,5 @@
 {
 	"update":"update.php",
-	"certificate":"~client_secret.json"
+	"certificate":"~client_secret.json",
+	"conf":"drakon5999\\gdoc2article\\GoogleDocs"
 }

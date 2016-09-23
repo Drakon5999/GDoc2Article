@@ -9,8 +9,6 @@ if (!is_file('vendor/autoload.php')) {
 	require_once('vendor/autoload.php');
 	Router::init();
 }
-
-
 $html = GoogleDocs::getArticle($_REQUEST['id']);
 
 

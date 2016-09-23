@@ -6,7 +6,6 @@
         "infrajs/path":"~1",
         "infrajs/rubrics":"~1",
         "infrajs/view":"~1",
-		"infrajs/config":"~1",
         "infrajs/access":"~1",
         "kevintweber/groundskeeper":"~0.1",
         "adevelop/htmlcleaner":"~1"

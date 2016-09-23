@@ -13,12 +13,9 @@
 ## Использование
 
 - Нужно [создать девелоперский ключ](https://console.developers.google.com) и загрузить его в папку data/client_secret.json.
-- В GoogleDocs создайте папку "GDoc2Article".
-- Дайте к ней доступ девелоперскому аккаунту.
-- Откройте в браузере youproject.ru/vendor/drakon5999/quickstart.php.
-- В проекте появится папа data/GDoc2Article/ с содержимым из GoogleDocs.
-- Смотрим quickstart.php делаем как там.
-- Enjoy!
+- В GoogleDocs откройте доступ на любой файл на созданный ключ.
+- Откройте в браузере путь ```/vendor/drakon5999/gdoc2article/?id={ИД документа}``` ИД документа можно подсмотреть в адресной строке открытого документа.
+
 
 ### Как создать девелоперский ключ
 В [Google APIs](https://console.developers.google.com) если в первый раз прокликиваем обучающие окошки.
@@ -34,3 +31,14 @@
  - Узнаём имя сервисного аккаунта на странице [Сервисных аккаунтов](https://console.developers.google.com/iam-admin/serviceaccounts/project).
  - Создаём папку, в примере GDoc2Article, и даём доступ этому аккаунту.
  - [Управлять доступами](https://console.developers.google.com/iam-admin/iam/iam-zero), дать доступ клиенту, сотрудникам
+
+
+## Опции
+```php
+	class GoogleDocs {
+		public static $conf = array(
+			'production' => 'kemppi-nn.ru', //Адрес продакшина, для замены ссылок из гуглдокс на ссылки относительно корня сайта
+			'certificate' => '~client_secret.json' //Адрес файла с авторизацией гугла
+		);
+	}
+```
