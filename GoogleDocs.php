@@ -7,17 +7,16 @@ use infrajs\config\Config;
 use infrajs\router\Router;
 use infrajs\access\Access;
 use drakon5999\gdoc2article\GoogleDocs;
+use infrajs\rubrics\Rubrics;
+use Groundskeeper\Groundskeeper;
+use infrajs\view\View;
+use adevelop\htmlcleaner\HtmlCleaner;
 
 if (!is_file('vendor/autoload.php')) {
 	chdir('../../../');
 	require_once('vendor/autoload.php');
 	Router::init();
 }
-
-define('APPLICATION_NAME', 'Drive API PHP Quickstart');
-define('MIME_DIR', 'application/vnd.google-apps.folder');
-define('MIME_DOC', 'application/vnd.google-apps.document');
-define('MIME_HTML', 'text/html');
 
 $conf = Config::get('gdoc2article');
 putenv("GOOGLE_APPLICATION_CREDENTIALS=".Path::resolve($conf['certificate']));
@@ -42,13 +41,46 @@ class GoogleDocs {
 		$html = Access::cache(__FILE__.'getArticle', function () use ($id) {
 			$client = GoogleDocs::getClient();
 			$service = new \Google_Service_Drive($client);
-			$fileExport = $service->files->export($id, MIME_HTML);
-			$fileContent = $fileExport->getBody();
-			return $fileContent;
+			$fileExport = $service->files->export($id, 'text/html');
+			$html = $fileExport->getBody();
+			$html = GoogleDocs::cleanHtml($html);
+			return $html;
 		});
 		return $html;
 	}
+	public static function cleanHtml($html) {
+		$groundskeeper = new Groundskeeper(array(
+		    'element-blacklist' => 'style,meta'
+		));
+		$html = $groundskeeper->clean($html);
 
+
+		$allowed_tags = 'p,ul,li,ol,img[src],h1,h2,h3,a[href],table,tr,td,b,i';
+		$allow_href_js = false;
+
+		$html = preg_replace('/<span style="[^"]*font-style:italic[^"]*font-weight:700[^"]*">([^<]*)<\/span>/', '<b><i>$1</i></b>', $html);
+		$html = preg_replace('/<span style="[^"]*font-weight:700[^"]*font-style:italic[^"]*">([^<]*)<\/span>/', '<b><i>$1</i></b>', $html);
+		$html = preg_replace('/<span style="[^"]*font-weight:700[^"]*">([^<]*)<\/span>/', '<b>$1</b>', $html);
+		$html = preg_replace('/<span style="[^"]*font-style:italic[^"]*">([^<]*)<\/span>/', '<i>$1</i>', $html);
+
+
+		$cleaner = new HtmlCleaner($allowed_tags, $allow_href_js);
+
+		$html = $cleaner->clean($html);
+
+
+		$html = preg_replace('/\s+/u', ' ', $html);//Все невидимые символы неразрывного пробела удаляем
+		//$html = preg_replace('/\s<\//', '</', $html);//Удаляем пробел перед закрывающим тегом <a>ссылки </a> 
+
+
+
+		//$html = preg_replace('/https:\/\/www.google.com\/url\?q=http','',$html);
+		//https://www.google.com/url?q=https://kemppi-nn.ru/contacts&amp;sa=D&amp;ust=1474575413967000&amp;usg=AFQjCNEMpDDy_ykh9PcNwX14uTdVZ-zb4A
+
+
+		$html = Rubrics::parse($html);
+		return $html;
+	}
 	
 
 	//FOLDER
@@ -56,13 +88,13 @@ class GoogleDocs {
 		
 		Path::mkdir($path);
 		foreach ($dirTree as $id => &$subTree) {
-			if ($subTree["mimeType"] == MIME_DIR) {
+			if ($subTree["mimeType"] == 'application/vnd.google-apps.folder') {
 				$subTree["children"] = GoogleDocs::getChildren($subTree['id'], $service);
 				Path::mkdir($path.$subTree['name'].'/');
 
 				GoogleDocs::buildTree($subTree["children"], $service, $path.$subTree['name']."/");
-			} else if ($subTree["mimeType"] == MIME_DOC) {
-				$fileExport = $service->files->export($subTree['id'], MIME_HTML);
+			} else if ($subTree["mimeType"] == 'application/vnd.google-apps.document') {
+				$fileExport = $service->files->export($subTree['id'], 'text/html');
 				//print_r(get_class_methods(get_class($fileExport)));
 				
 				$src = Path::theme($path);
