@@ -36,7 +36,7 @@ class GoogleDocs {
 
 		return $client;
 	}
-	public static function getArticle($id, $dir)
+	public static function getArticle($id/*, $dir*/)
 	{
 		// Get the API client and construct the service object.
 
