@@ -7,6 +7,7 @@ use infrajs\router\Router;
 use infrajs\access\Access;
 use infrajs\rubrics\Rubrics;
 use Groundskeeper\Groundskeeper;
+use infrajs\template\Template;
 use infrajs\view\View;
 use adevelop\htmlcleaner\HtmlCleaner;
 
@@ -24,6 +25,18 @@ class GoogleDocs {
 		'certificate' => '~client_secret.json' //Адрес файла с авторизацией гугла
 	);
 	/**
+	 * @return html of articles or html-404 with http header
+	 */
+	public static function get($id) 
+	{
+		$html = GoogleDocs::getArticle($id);
+		if ($html === false) {
+			$html = Template::parse('-gdoc2article/layout.tpl', array(), '404');
+			http_response_code(404);
+		}
+		return $html;
+	}
+	/**
 	 * Returns an authorized API client.
 	 * @return Google_Client the authorized client object
 	 */
@@ -36,19 +49,39 @@ class GoogleDocs {
 
 		return $client;
 	}
+	public static function list($id) {
+		return Access::cache(__FILE__.'getArticle', function () use ($id) {
+			$client = GoogleDocs::getClient();
+			$service = new \Google_Service_Drive($client);
+			$list = array();
+			try {
+				$fileExport = $service->files->export($id, 'text/html');
+			} catch (\Exception $e) {
+				return $list;
+			}
+			
+			
+			return $list;
+		});
+	}
 	public static function getArticle($id/*, $dir*/)
 	{
 		// Get the API client and construct the service object.
-
-		$html = Access::cache(__FILE__.'getArticle', function () use ($id) {
+		return Access::cache(__FILE__.'getArticle', function () use ($id) {
 			$client = GoogleDocs::getClient();
 			$service = new \Google_Service_Drive($client);
-			$fileExport = $service->files->export($id, 'text/html');
+			try {
+
+				$fileExport = $service->files->export($id, 'text/html');
+				
+			} catch (\Exception $e) {
+				return false;
+			}
+
 			$html = $fileExport->getBody();
 			$html = GoogleDocs::cleanHtml($html);
 			return $html;
 		});
-		return $html;
 	}
 	public static function cleanHtml($html) {
 		$groundskeeper = new Groundskeeper(array(
