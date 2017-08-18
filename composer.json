@@ -1,7 +1,7 @@
 {
     "name":"drakon5999/gdoc2article",
     "require": {
-        "google/apiclient": "~3",
+        "google/apiclient": "~2",
         "infrajs/router":"~1",
         "infrajs/path":"~1",
         "infrajs/rubrics":"~1",
