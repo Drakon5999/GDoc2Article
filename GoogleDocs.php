@@ -49,7 +49,6 @@ class GoogleDocs {
 	}
 	public static function getPublicFolder($pub, $id) {
 		$list = GoogleDocs::getFolder($id);
-		
 		$path = '~'.$pub.'/';
 		$dir = Path::theme($path);
 		if(!$dir) return $list;
@@ -68,6 +67,7 @@ class GoogleDocs {
 			$page = Rubrics::info($src);
 			$body = Rubrics::article($src);
 
+			if(!empty($page['date'])) $list[$name]['date'] = $page['date'];
 			if(!empty($page['preview'])) $list[$name]['preview'] = $page['preview'];
 			if(!empty($page['images'])) $list[$name]['images'] = array_merge($list[$name]['images'], $page['images']);
 			$list[$name]['heading'] = $page['heading'];
@@ -112,12 +112,14 @@ class GoogleDocs {
 		foreach ($result as $k => $file) {
 			if ($file['mimeType'] != 'application/vnd.google-apps.document') continue;
 			$fd = Load::nameInfo($file['name']);
+			
 			if (!$fd['id']) continue;
 			$name = $fd['id'];
 			$data = array();
 			$data['name'] = $name;
 			$data['heading'] = $fd['name'];
 			$data['id'] = $file['id'];
+			$data['date'] = $fd['date'];
 			$data['body'] = GoogleDocs::getArticle($file['id']);
 
 			preg_match_all("/src=\"([^\"]*)\"/", $data['body'], $match);
@@ -128,7 +130,7 @@ class GoogleDocs {
 			$data['preview'] = Docx::getPreview($data['body']);
 			$list[$name] = $data;
 		}
-
+		
 		return $list;
 	}
 	public static function getArticle($id/*, $dir*/)
