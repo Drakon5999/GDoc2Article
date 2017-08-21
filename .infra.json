@@ -1,5 +1,8 @@
 {
 	"update":"update.php",
 	"certificate":"~client_secret.json",
+	"public":{
+		"pages":"src"
+	},
 	"conf":"drakon5999\\gdoc2article\\GoogleDocs"
 }

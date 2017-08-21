@@ -7,6 +7,7 @@
         "infrajs/rubrics":"~1",
         "infrajs/view":"~1",
         "infrajs/rest":"~1",
+        "infrajs/cache":"~1",
         "infrajs/template":"~1",
         "infrajs/access":"~1",
         "kevintweber/groundskeeper":"~0.1",
