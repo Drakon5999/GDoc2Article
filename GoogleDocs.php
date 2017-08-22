@@ -115,10 +115,13 @@ class GoogleDocs {
 			
 			if (!$fd['id']) continue;
 			$name = $fd['id'];
+			
 			$data = array();
-			$data['name'] = $name;
+
+			$data['name'] = $fd['name'];
 			$data['heading'] = $fd['name'];
-			$data['id'] = $file['id'];
+			$data['id'] = $name; 
+			$data['driveid'] = $file['id'];
 			$data['date'] = $fd['date'];
 			$data['body'] = GoogleDocs::getArticle($file['id']);
 

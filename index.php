@@ -61,9 +61,10 @@ return Rest::get( function () {
 				http_response_code(404);
 				return;
 			}
+			unset($list[$name]['body']);
 			$ans['data'] = $list[$name];
 			return Ans::ret($ans);
-		}, function ($t, $pub, $name, $prop) {
+		}, 'body', function ($t, $pub, $name, $prop) {
 			$ans = array();
 			$public = GoogleDocs::$conf['public'];
 			if (empty($public[$pub])) {
@@ -76,15 +77,7 @@ return Rest::get( function () {
 				http_response_code(404);
 				return;
 			}
-			if (empty($list[$name][$prop])) {
-				http_response_code(404);
-				return;
-			}
-			if (is_string($list[$name][$prop])) {
-				return Ans::html($list[$name][$prop]);
-			}
-			$ans['data'] = $list[$name][$prop];
-			return Ans::ret($ans);
+			return Ans::html($list[$name][$prop]);
 		}]]], 
 function ($id) {
 	$html = GoogleDocs::getArticle($id);
