@@ -70,11 +70,18 @@ return Rest::get( function () {
 			$list = GoogleDocs::getPublicFolder($pub, $id);
 			if (empty($list[$name])) {
 				http_response_code(404);
-				return;
+				$ans['data'] = array(
+					'id' => $name
+				);
+				return Ans::err($ans);
+			} else {
+				unset($list[$name]['body']);
+				$ans['data'] = $list[$name];	
+				return Ans::ret($ans);
 			}
-			unset($list[$name]['body']);
-			$ans['data'] = $list[$name];
-			return Ans::ret($ans);
+			
+			
+			
 		}, 'body', function ($t, $pub, $name, $prop) {
 			$ans = array();
 			$public = GoogleDocs::$conf['public'];

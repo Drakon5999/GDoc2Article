@@ -77,6 +77,7 @@ class GoogleDocs {
 			if(!empty($page['date'])) $list[$name]['date'] = $page['date'];
 			if(!empty($page['preview'])) $list[$name]['preview'] = $page['preview'];
 			if(!empty($page['images'])) $list[$name]['images'] = array_merge($list[$name]['images'], $page['images']);
+			$list[$name]['layout'] = true;
 			$list[$name]['heading'] = $page['heading'];
 			$list[$name]['body'] = $body.$list[$name]['body'];
 			
@@ -217,6 +218,8 @@ class GoogleDocs {
 		$html = preg_replace('/<span style="[^"]*font-weight:700[^"]*">([^<]*)<\/span>/', '<b>$1</b>', $html);
 		$html = preg_replace('/<span style="[^"]*font-style:italic[^"]*">([^<]*)<\/span>/', '<i>$1</i>', $html);
 
+
+
 		$r = explode('###', $html, 2);
 		$html = $r[0];
 
@@ -229,6 +232,7 @@ class GoogleDocs {
 		//$html = preg_replace('/\s<\//', '</', $html);//Удаляем пробел перед закрывающим тегом <a>ссылки </a> 
 
 
+		$html = preg_replace('/<a\/>/', '', $html); //Удаляем пустые ссылки
 		
 		//https://www.google.com/url?q=https://kemppi-nn.ru/contacts&amp;sa=D&amp;ust=1474575413967000&amp;usg=AFQjCNEMpDDy_ykh9PcNwX14uTdVZ-zb4A
 		$conf = GoogleDocs::$conf;
