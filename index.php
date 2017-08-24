@@ -29,7 +29,18 @@ return Rest::get( function () {
 	}, function ($type, $id) {
 		$list = GoogleDocs::getFolder($id);
 		return Ans::ret($list);
-}], 'public', [function () {
+}], 'table', [function () {
+		$html = GoogleDocs::html('WHAT');
+		return Ans::html($html);
+	}, [ function () {
+		$html = GoogleDocs::html('WHAT');
+		return Ans::html($html);
+}, function ($type, $id, $range) {
+		$data = GoogleDocs::getTable($id, $range);
+		$ans = array();
+		$ans['data'] = $data;
+		return Ans::ret($ans);
+}]], 'public', [function () {
 		$ans = array();
 		$public = GoogleDocs::$conf['public'];
 		$ans['data'] = $public;

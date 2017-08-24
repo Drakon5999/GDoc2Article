@@ -4,6 +4,7 @@
 	<ul>
 		<li><b>/ID</b> файла</li>
 		<li><b>/folder/ID</b> папки</li>
+		<li><b>/table/ID/RANGE</b> таблицы</li>
 		<li><a href="/{root}/public">/public</a></li>
 		{public::pub}
 	</ul>

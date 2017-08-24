@@ -13,6 +13,7 @@ use infrajs\rest\Rest;
 use infrajs\load\Load;
 use infrajs\cache\Cache;
 use infrajs\doc\Docx;
+use infrajs\excel\Xlsx;
 use adevelop\htmlcleaner\HtmlCleaner;
 
 if (!is_file('vendor/autoload.php')) {
@@ -45,6 +46,12 @@ class GoogleDocs {
 	{
 		$client = GoogleDocs::getClient();
 		$service = new \Google_Service_Drive($client);
+		return $service;
+	}
+	public static function getServiceSheets() 
+	{
+		$client = GoogleDocs::getClient();
+		$service = new \Google_Service_Sheets($client);
 		return $service;
 	}
 	public static function getPublicFolder($pub, $id) {
@@ -139,7 +146,7 @@ class GoogleDocs {
 	public static function getArticle($id/*, $dir*/)
 	{
 		// Get the API client and construct the service object.
-		return Access::cache(__FILE__.'getArticle', function ($id) {
+		return Cache::exec(array(),__FILE__.'getArticle', function ($id) {
 			$service = GoogleDocs::getService();
 			try {
 
@@ -153,6 +160,47 @@ class GoogleDocs {
 			$html = GoogleDocs::cleanHtml($html);
 			return $html;
 		}, array($id));
+	}
+	public static function getTable($id, $range)
+	{
+		// Get the API client and construct the service object.
+		return Cache::exec(array(),__FILE__.'getTable', function ($id, $range) {
+			$service = GoogleDocs::getServiceSheets();
+			$response = $service->spreadsheets_values->get($id, $range);
+			$values = $response->getValues();
+			
+			$descr = array();
+			$head = array();
+			$data = array();
+			try {
+				$response = $service->spreadsheets_values->get($id, $range);
+				$values = $response->getValues();
+				foreach ($values as $k => $row) {
+					if (!$head && sizeof($row) > 2) {
+						$head = $row;
+						continue;
+					}
+					if (!$head) {
+						if (!isset($row[1])) $row[1] = '';
+						if (!isset($row[0])) continue;
+						$descr[$row[0]] = $row[1];
+					} else {
+						$r = array();
+						foreach ($head as $n => $name) {
+							if (!isset($row[$n])) $row[$n] = '';
+							$r[$head[$n]] = $row[$n];
+							
+						}
+						$data[] = $r;	
+					} 
+				}
+			} catch (\Exception $e) {
+			}
+			$values = array('descr' => $descr, 'head' => $head, 'data' => $data);
+
+			
+			return $values;
+		}, array($id, $range));
 	}
 	public static function cleanHtml($html) {
 		$groundskeeper = new Groundskeeper(array(
