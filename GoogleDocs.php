@@ -75,10 +75,10 @@ class GoogleDocs {
 			$body = Rubrics::article($src);
 
 			if(!empty($page['date'])) $list[$name]['date'] = $page['date'];
-			if(!empty($page['preview'])) $list[$name]['preview'] = $page['preview'];
+			//if(!empty($page['preview'])) $list[$name]['preview'] = $page['preview'];
 			if(!empty($page['images'])) $list[$name]['images'] = array_merge($list[$name]['images'], $page['images']);
 			$list[$name]['layout'] = true;
-			$list[$name]['heading'] = $page['heading'];
+			//if (!empty($page['heading'])) $list[$name]['heading'] = $page['heading'];
 			$list[$name]['body'] = $body.$list[$name]['body'];
 			
 		}, scandir($dir));
