@@ -74,11 +74,13 @@ class GoogleDocs {
 			$page = Rubrics::info($src);
 			$body = Rubrics::article($src);
 
-			if(!empty($page['date'])) $list[$name]['date'] = $page['date'];
-			//if(!empty($page['preview'])) $list[$name]['preview'] = $page['preview'];
-			if(!empty($page['images'])) $list[$name]['images'] = array_merge($list[$name]['images'], $page['images']);
+			if (!empty($page['date'])) $list[$name]['date'] = $page['date'];
+			if (!empty($page['preview']) && empty($list[$name]['preview'])) $list[$name]['preview'] = $page['preview'];
+			if (!empty($page['images'])) $list[$name]['images'] = array_merge($list[$name]['images'], $page['images']);
 			$list[$name]['layout'] = true;
-			//if (!empty($page['heading'])) $list[$name]['heading'] = $page['heading'];
+			if (!empty($page['heading']) && empty($list[$name]['heading'])) $list[$name]['heading'] = $page['heading'];
+			if (!empty($page['heading']) && empty($list[$name]['name'])) $list[$name]['name'] = $page['heading'];
+			if (!empty($page['name']) && empty($list[$name]['id'])) $list[$name]['id'] = $page['name'];
 			$list[$name]['body'] = $body.$list[$name]['body'];
 			
 		}, scandir($dir));
