@@ -2,6 +2,7 @@
 use infrajs\router\Router;
 use infrajs\ans\Ans;
 use infrajs\rest\Rest;
+use infrajs\load\Load;
 use drakon5999\gdoc2article\GoogleDocs;
 
 
@@ -50,11 +51,24 @@ return Rest::get( function () {
 		$public = GoogleDocs::$conf['public'];
 		if (empty($public[$pub])) return Ans::err($ans,'Ключ '.$pub.' не зарегистрирован');
 		$id = $public[$pub];
-		$list = GoogleDocs::getPublicFolder($pub, $id);
-		foreach ($list as $k=>$v) {
-			unset($list[$k]['body']);
+		$data = GoogleDocs::getPublicFolder($pub, $id);
+		$order = Ans::GET('order',['ascending','descending'], 'descending');
+		Load::sort($data, $order);
+		$list = array();
+		foreach ($data as $k => $v) {
+			unset($data[$k]['body']);
+			$list[$v['id']] = $v;
 			//$list[$k] = $v['body'];
 		}
+		
+
+
+		$lim = Ans::GET('lim','string','0,200');
+		list($start, $count) = explode(',', $lim);
+		
+		$list = array_slice($list, $start, $count);
+		
+
 		$ans['data'] = $list;
 		return Ans::ret($ans);
 	}, [ function ($t, $pub, $name) {
