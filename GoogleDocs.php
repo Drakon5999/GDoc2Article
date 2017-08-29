@@ -240,11 +240,11 @@ class GoogleDocs {
 		$conf = GoogleDocs::$conf;
 		if ($conf['production']) {
 			$host = $conf['production'];
-			$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'([^"]*)&amp;sa=[^"]*/','/$1',$html);
 		} else {
 			$host = View::getHost();
-			$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'([^"]*)&amp;sa=[^"]*/','$1',$html);
 		}
+		$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'&amp;sa=[^"]*/','/',$html);
+		$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'([^"]*)&amp;sa=[^"]*/','$1',$html);
 		$html = preg_replace('/https:\/\/www.google.com\/url\?q=(https{0,1}:\/\/[^"]*)&amp;sa=[^"]*/','$1',$html);
 		$html = Rubrics::parse($html);
 		return $html;
