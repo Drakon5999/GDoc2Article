@@ -88,7 +88,7 @@ class GoogleDocs {
 		return $list;
 	}
 	public static function getFolder($id) {
-		return Cache::exec(array(),__FILE__.'getFolder', function ($id) {
+		return Cache::exec(array(),'-gdoc2article/getFolder', function ($id) {
 			return GoogleDocs::_getFolder($id);
 		}, array($id), isset($_GET['re']));
 	}
@@ -149,7 +149,7 @@ class GoogleDocs {
 	public static function getArticle($id/*, $dir*/)
 	{
 		// Get the API client and construct the service object.
-		return Cache::exec(array(),__FILE__.'getArticle', function ($id) {
+		return Cache::exec(array(),'-gdoc2article/getArticle', function ($id) {
 			$service = GoogleDocs::getService();
 			try {
 
@@ -167,7 +167,7 @@ class GoogleDocs {
 	public static function getTable($id, $range)
 	{
 		// Get the API client and construct the service object.
-		return Cache::exec(array(),__FILE__.'getTable', function ($id, $range) {
+		return Cache::exec(array(),'-gdoc2article/getTable', function ($id, $range) {
 			$service = GoogleDocs::getServiceSheets();
 			$response = $service->spreadsheets_values->get($id, $range);
 			$values = $response->getValues();
@@ -240,7 +240,7 @@ class GoogleDocs {
 		$conf = GoogleDocs::$conf;
 		if ($conf['production']) {
 			$host = $conf['production'];
-			$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'([^"]*)&amp;sa=[^"]*/','$1',$html);
+			$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'([^"]*)&amp;sa=[^"]*/','/$1',$html);
 		} else {
 			$host = View::getHost();
 			$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'([^"]*)&amp;sa=[^"]*/','$1',$html);
