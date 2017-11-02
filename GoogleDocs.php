@@ -11,6 +11,7 @@ use infrajs\template\Template;
 use infrajs\view\View;
 use infrajs\rest\Rest;
 use infrajs\load\Load;
+use akiyatkin\boo\Boo;
 use infrajs\cache\Cache;
 use infrajs\doc\Docx;
 use infrajs\excel\Xlsx;
@@ -55,7 +56,7 @@ class GoogleDocs {
 		return $service;
 	}
 	public static function getPublicFolder($pub, $id) {
-		$list = GoogleDocs::getFolder($id);
+		$list = GoogleDocs::getFolder($id, $pub);
 		$path = '~'.$pub.'/';
 		$dir = Path::theme($path);
 		if(!$dir) return $list;
@@ -87,9 +88,9 @@ class GoogleDocs {
 
 		return $list;
 	}
-	public static function getFolder($id) {
-		return Cache::exec(array(),'-gdoc2article/getFolder', function ($id) {
-			return GoogleDocs::_getFolder($id);
+	public static function getFolder($id, $pub = 'noname') {
+		return Boo::cache('gdoc2article-'.$pub, function ($id) use ($pub){
+			return GoogleDocs::_getFolder($id, $pub);
 		}, array($id), isset($_GET['re']));
 	}
 	public static function html($name = 'WHAT', $clean = false) {
@@ -98,7 +99,7 @@ class GoogleDocs {
 		else $html = Rest::parse('-gdoc2article/layout.tpl', array('public' => $public), $name);
 		return $html;
 	}
-	public static function _getFolder($id) {
+	public static function _getFolder($id, $pub = 'noname') {
 		$service = GoogleDocs::getService();
 		$result = array();
 		$pageToken = NULL;
@@ -122,7 +123,6 @@ class GoogleDocs {
 		foreach ($result as $k => $file) {
 			if ($file['mimeType'] != 'application/vnd.google-apps.document') continue;
 			$fd = Load::nameInfo($file['name']);
-			
 			if (!$fd['id']) continue;
 			$name = $fd['id'];
 			
@@ -133,7 +133,7 @@ class GoogleDocs {
 			$data['id'] = $name; 
 			$data['driveid'] = $file['id'];
 			$data['date'] = $fd['date'];
-			$data['body'] = GoogleDocs::getArticle($file['id']);
+			$data['body'] = GoogleDocs::getArticle($file['id'], $pub.'-'.$fd['name']);
 
 			preg_match_all("/src=\"([^\"]*)\"/", $data['body'], $match);
 			$data['images'] = $match[1];
@@ -146,10 +146,10 @@ class GoogleDocs {
 		
 		return $list;
 	}
-	public static function getArticle($id/*, $dir*/)
+	public static function getArticle($id, $pub = 'noname')
 	{
 		// Get the API client and construct the service object.
-		return Cache::exec(array(),'-gdoc2article/getArticle', function ($id) {
+		return Boo::cache('gdoc2article-'.$pub, function ($id) {
 			$service = GoogleDocs::getService();
 			try {
 

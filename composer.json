@@ -9,6 +9,7 @@
         "infrajs/rest":"~1",
         "infrajs/cache":"~1",
         "infrajs/template":"~1",
+        "akiyatkin/boo":"~1",
         "infrajs/access":"~1",
         "kevintweber/groundskeeper":"~0.1",
         "adevelop/htmlcleaner":"~1"

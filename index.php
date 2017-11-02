@@ -74,7 +74,6 @@ return Rest::get( function () {
 	}, [ function ($t, $pub, $name) {
 			$ans = array();
 			$public = GoogleDocs::$conf['public'];
-			
 			if (empty($public[$pub])) {
 				return Ans::err($ans,'Ключ '.$pub.' не зарегистрирован');
 			}
