@@ -3,8 +3,8 @@ use infrajs\router\Router;
 use infrajs\ans\Ans;
 use infrajs\rest\Rest;
 use infrajs\load\Load;
+use infrajs\path\Path;
 use drakon5999\gdoc2article\GoogleDocs;
-
 
 if (!is_file('vendor/autoload.php')) {
 	chdir('../../../');
@@ -92,9 +92,6 @@ return Rest::get( function () {
 				$ans['data'] = $list[$name];	
 				return Ans::ret($ans);
 			}
-			
-			
-			
 		}, 'body', function ($t, $pub, $name, $prop) {
 			$ans = array();
 			$public = GoogleDocs::$conf['public'];
