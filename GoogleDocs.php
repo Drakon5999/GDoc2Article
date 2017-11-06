@@ -71,7 +71,7 @@ class GoogleDocs {
 				'images' => array()
 			);
 			$src = $path.$fd['file'];
-			$page = Rubrics::info($src);
+			$page = Rubrics::info($src); //images.src
 			$body = Rubrics::article($src);
 
 			if (!empty($page['date'])) $list[$name]['date'] = $page['date'];
@@ -136,6 +136,9 @@ class GoogleDocs {
 
 			preg_match_all("/src=\"([^\"]*)\"/", $data['body'], $match);
 			$data['images'] = $match[1];
+			foreach ($data['images'] as &$v) {
+				$v = array('src'=>$v);
+			}
 
 			$r = preg_match("/<h1>([^<]*)<\/h1>/", $data['body'], $match);
 			if ($r) $data['heading'] = $match[1];
