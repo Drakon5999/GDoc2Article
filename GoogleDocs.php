@@ -162,6 +162,7 @@ class GoogleDocs {
 			}
 
 			$html = $fileExport->getBody();
+			
 			$html = GoogleDocs::cleanHtml($html);
 			return $html;
 		}, array($id));
@@ -246,9 +247,18 @@ class GoogleDocs {
 		} else {
 			$host = View::getHost();
 		}
+		
+		
+
 		$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'&amp;sa=[^"]*/','/',$html);
 		$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'([^"]*)&amp;sa=[^"]*/','$1',$html);
 		$html = preg_replace('/https:\/\/www.google.com\/url\?q=(https{0,1}:\/\/[^"]*)&amp;sa=[^"]*/','$1',$html);
+
+		preg_match_all('/<a href="([^"]+)".+?<\/a>/', $html, $matches);
+		foreach ($matches[1] as $v) {
+			$vn = urldecode($v);
+			$html = str_replace($v,$vn, $html);
+		}
 		$html = Rubrics::parse($html);
 		return $html;
 	}
