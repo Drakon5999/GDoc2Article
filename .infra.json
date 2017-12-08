@@ -1,6 +1,6 @@
 {
 	"update":"update.php",
-	"certificate":"~client_secret.json",
+	"certificate":"~.client_secret.json",
 	"public":{
 		"pages":"src"
 	},
