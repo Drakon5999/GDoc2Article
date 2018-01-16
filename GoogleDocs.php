@@ -55,12 +55,12 @@ class GoogleDocs {
 		return $service;
 	}
 	public static function getPublicFolder($pub, $id) {
-		$list = GoogleDocs::getFolder($id, $pub);
+		$list = GoogleDocs::getFolder($id);
 		$path = '~'.$pub.'/';
 		$dir = Path::theme($path);
 		if(!$dir) return $list;
 
-		array_map(function ($file) use ($pub, $path, &$list) {
+		array_map(function ($file) use ($path, &$list) {
 			if ($file{0} == '.') return;
 			$file = Path::toutf($file);
 			$fd = Load::nameInfo($file);
@@ -87,9 +87,9 @@ class GoogleDocs {
 
 		return $list;
 	}
-	public static function getFolder($id, $pub = 'noname') {
-		return Boo::cache('gdoc2folder-'.$pub, function ($id) use ($pub){
-			return GoogleDocs::_getFolder($id, $pub);
+	public static function getFolder($id) {
+		return Boo::cache(['gdoc2folder/getFolder', 'Папки с документами'], function ($id) {
+			return GoogleDocs::_getFolder($id);
 		}, array($id), isset($_GET['re']));
 	}
 	public static function html($name = 'WHAT', $clean = false) {
@@ -98,10 +98,13 @@ class GoogleDocs {
 		else $html = Rest::parse('-gdoc2article/layout.tpl', array('public' => $public), $name);
 		return $html;
 	}
-	public static function _getFolder($id, $pub = 'noname') {
+	public static function _getFolder($id) {
 		$service = GoogleDocs::getService();
 		$result = array();
 		$pageToken = NULL;
+
+		$folder = $service->files->get($id);
+		Boo::setTitle($folder['name']);
 
 		do {
 			try {
@@ -109,6 +112,7 @@ class GoogleDocs {
 			  if ($pageToken) {
 					$parameters['pageToken'] = $pageToken;
 			  }
+
 			  $files = $service->files->listFiles($parameters);
 			  $result = array_merge($result, $files->files);
 			  $pageToken = $files->getNextPageToken();
@@ -117,6 +121,7 @@ class GoogleDocs {
 			  $pageToken = NULL;
 			}
 		} while ($pageToken);
+		
 
 		$list = array();
 		foreach ($result as $k => $file) {
@@ -132,7 +137,7 @@ class GoogleDocs {
 			$data['id'] = $name; 
 			$data['driveid'] = $file['id'];
 			$data['date'] = $fd['date'];
-			$data['body'] = GoogleDocs::getArticle($file['id'], $pub.'-'.$fd['name']);
+			$data['body'] = GoogleDocs::getArticle($file['id']);
 
 			preg_match_all("/src=\"([^\"]*)\"/", $data['body'], $match);
 			$data['images'] = $match[1];
@@ -148,31 +153,32 @@ class GoogleDocs {
 		
 		return $list;
 	}
-	public static function getArticle($id, $pub = 'noname')
+	public static function getArticle($id, $file = null)
 	{
 		// Get the API client and construct the service object.
-		return Boo::cache('gdoc2article-'.$pub, function ($id) {
+		return Boo::cache(['gdoc2article-getArticle','Документы'], function ($id) use ($file) {
 			$service = GoogleDocs::getService();
 			try {
-
-				$fileExport = $service->files->export($id, 'text/html');
 				
+				$fileExport = $service->files->export($id, 'text/html');
+
+				if (!$file) $file = $service->files->get($id);
+				Boo::setTitle($file['name']);
+				
+				$html = $fileExport->getBody();		
 			} catch (\Exception $e) {
-				return false;
+				return "An error occurred: " . $e->getMessage();
 			}
 
-			$html = $fileExport->getBody();
-			
 			$html = GoogleDocs::cleanHtml($html);
 			return $html;
 		}, array($id));
 	}
 	public static function getTable($id, $range)
 	{
-		// Get the API client and construct the service object.
-		$pub = Path::encode($range).'-'.$id;
-		return Boo::cache('gdoc2article-getTable-'.$pub, function ($id, $range) {
+		$r = Boo::cache(['gdoc2article-getTable','Таблицы'], function ($id, $range) {
 			$service = GoogleDocs::getServiceSheets();
+			$srv = GoogleDocs::getService();
 			$response = $service->spreadsheets_values->get($id, $range);
 			$values = $response->getValues();
 			
@@ -181,6 +187,10 @@ class GoogleDocs {
 			$data = array();
 			try {
 				$response = $service->spreadsheets_values->get($id, $range);
+				
+				$file = $srv->files->get($id);
+				Boo::setTitle($file['name']);
+
 				$values = $response->getValues();
 				foreach ($values as $k => $row) {
 					if (!$head && sizeof($row) > 2) {
@@ -201,13 +211,11 @@ class GoogleDocs {
 						$data[] = $r;	
 					} 
 				}
-			} catch (\Exception $e) {
-			}
+			} catch (\Exception $e) { }
 			$values = array('descr' => $descr, 'head' => $head, 'data' => $data);
-
-			
 			return $values;
 		}, array($id, $range));
+		return $r;
 	}
 	public static function cleanHtml($html) {
 		$groundskeeper = new Groundskeeper(array(
