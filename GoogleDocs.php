@@ -189,7 +189,7 @@ class GoogleDocs {
 				$response = $service->spreadsheets_values->get($id, $range);
 				
 				$file = $srv->files->get($id);
-				Boo::setTitle($file['name']);
+				Boo::setTitle($file['name'].' '.$range);
 
 				$values = $response->getValues();
 				foreach ($values as $k => $row) {
