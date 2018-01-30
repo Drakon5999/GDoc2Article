@@ -231,8 +231,8 @@ class GoogleDocs {
 		$html = preg_replace('/<span style="[^"]*font-weight:700[^"]*font-style:italic[^"]*">([^<]*)<\/span>/', '<b><i>$1</i></b>', $html);
 		$html = preg_replace('/<span style="[^"]*font-weight:700[^"]*">([^<]*)<\/span>/', '<b>$1</b>', $html);
 		$html = preg_replace('/<span style="[^"]*font-style:italic[^"]*">([^<]*)<\/span>/', '<i>$1</i>', $html);
-
-
+		$html = preg_replace('/<b><\/b>/', '', $html);
+		
 
 		$r = explode('###', $html, 2);
 		$html = $r[0];
