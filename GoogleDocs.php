@@ -169,7 +169,7 @@ class GoogleDocs {
 			} catch (\Exception $e) {
 				return "An error occurred: " . $e->getMessage();
 			}
-
+			
 			$html = GoogleDocs::cleanHtml($html);
 			return $html;
 		}, array($id));
@@ -218,14 +218,29 @@ class GoogleDocs {
 		return $r;
 	}
 	public static function cleanHtml($html) {
+
 		$groundskeeper = new Groundskeeper(array(
 		    'element-blacklist' => 'style,meta'
 		));
 		$html = $groundskeeper->clean($html);
 
-
-		$allowed_tags = 'p,ul,li,ol,img[src],h1,h2,h3,a[href],table,tr,td,b,i';
-		$allow_href_js = false;
+		//img
+		$pattern = '/(<span style="overflow[^>]*>)<img[^>]*src="([^"]*)"[^>]*style="width:\s(\d+).\d*px;\sheight:\s(\d+).\d*px;\s([^>]*>)/Ui';
+		do {
+			$match = array();
+			preg_match($pattern, $html, $match);
+			if (sizeof($match) > 3 && $match[3] > 80 && $match[3] < 400) {
+				$start = $match[1];
+				$src = $match[2];
+				$w = $match[3];
+				$h = $match[4];
+				$end = $match[5];
+				
+				$html = preg_replace($pattern,$start.'<img src="/-imager/?w='.$w.'&h='.$h.'&src='.$src.'" align="right" class="right" style="'.$end, $html, 1);
+			} 
+		} while (sizeof($match) > 3 && $match[3] > 80 && $match[3] < 400);
+		
+		
 
 		$html = preg_replace('/<span style="[^"]*font-style:italic[^"]*font-weight:700[^"]*">([^<]*)<\/span>/', '<b><i>$1</i></b>', $html);
 		$html = preg_replace('/<span style="[^"]*font-weight:700[^"]*font-style:italic[^"]*">([^<]*)<\/span>/', '<b><i>$1</i></b>', $html);
@@ -236,7 +251,9 @@ class GoogleDocs {
 
 		$r = explode('###', $html, 2);
 		$html = $r[0];
-
+		
+		$allowed_tags = 'p,ul,li,ol,img[src|class|align],h1,h2,h3,a[href],table,tr,td,b,i';
+		$allow_href_js = false;
 		$cleaner = new HtmlCleaner($allowed_tags, $allow_href_js);
 
 		$html = $cleaner->clean($html);
@@ -267,6 +284,8 @@ class GoogleDocs {
 			$vn = urldecode($v);
 			$html = str_replace($v,$vn, $html);
 		}
+		
+
 		$html = Rubrics::parse($html);
 		return $html;
 	}
