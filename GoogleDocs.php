@@ -42,11 +42,13 @@ class GoogleDocs {
 
 		return $client;
 	}
-	public static function getService() 
+	public static function getServiceDrive()
 	{
-		$client = GoogleDocs::getClient();
-		$service = new \Google_Service_Drive($client);
-		return $service;
+	    return Boo::once(function(){
+            $client = GoogleDocs::getClient();
+            $service = new \Google_Service_Drive($client);
+            return $service;
+        });
 	}
 	public static function getServiceSheets() 
 	{
@@ -99,7 +101,7 @@ class GoogleDocs {
 		return $html;
 	}
 	public static function _getFolder($id) {
-		$service = GoogleDocs::getService();
+		$service = GoogleDocs::getServiceDrive();
 		$result = array();
 		$pageToken = NULL;
 
@@ -157,7 +159,7 @@ class GoogleDocs {
 	{
 		// Get the API client and construct the service object.
 		return Boo::cache(['gdoc2article-getArticle','Документы'], function ($id) use ($file) {
-			$service = GoogleDocs::getService();
+			$service = GoogleDocs::getServiceDrive();
 			try {
 				
 				$fileExport = $service->files->export($id, 'text/html');
@@ -178,7 +180,7 @@ class GoogleDocs {
 	{
 		$r = Boo::cache(['gdoc2article-getTable','Таблицы'], function ($id, $range) {
 			$service = GoogleDocs::getServiceSheets();
-			$srv = GoogleDocs::getService();
+			$srv = GoogleDocs::getServiceDrive();
 			$response = $service->spreadsheets_values->get($id, $range);
 			$values = $response->getValues();
 			
