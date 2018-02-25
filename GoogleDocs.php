@@ -11,7 +11,8 @@ use infrajs\template\Template;
 use infrajs\view\View;
 use infrajs\rest\Rest;
 use infrajs\load\Load;
-use akiyatkin\boo\Boo;
+use akiyatkin\boo\Cache;
+use akiyatkin\boo\Once;
 use infrajs\doc\Docx;
 use infrajs\excel\Xlsx;
 use adevelop\htmlcleaner\HtmlCleaner;
@@ -44,7 +45,7 @@ class GoogleDocs {
 	}
 	public static function getServiceDrive()
 	{
-	    return Boo::once(function(){
+	    return Once::exec(function(){
             $client = GoogleDocs::getClient();
             $service = new \Google_Service_Drive($client);
             return $service;
@@ -90,9 +91,9 @@ class GoogleDocs {
 		return $list;
 	}
 	public static function getFolder($id) {
-		return Boo::cache(['gdoc2folder/getFolder', 'Папки с документами'], function ($id) {
+		return Cache::exec('Папки с документами', function ($id) {
 			return GoogleDocs::_getFolder($id);
-		}, array($id), isset($_GET['re']));
+		}, array($id));
 	}
 	public static function html($name = 'WHAT', $clean = false) {
 		$public = GoogleDocs::$conf['public'];
@@ -106,7 +107,7 @@ class GoogleDocs {
 		$pageToken = NULL;
 
 		$folder = $service->files->get($id);
-		Boo::setTitle($folder['name']);
+		Cache::setTitle($folder['name']);
 
 		do {
 			try {
@@ -158,14 +159,14 @@ class GoogleDocs {
 	public static function getArticle($id, $file = null)
 	{
 		// Get the API client and construct the service object.
-		return Boo::cache(['gdoc2article-getArticle','Документы'], function ($id) use ($file) {
+		return Cache::exec('Документы', function ($id) use ($file) {
 			$service = GoogleDocs::getServiceDrive();
 			try {
 				
 				$fileExport = $service->files->export($id, 'text/html');
 
 				if (!$file) $file = $service->files->get($id);
-				Boo::setTitle($file['name']);
+				Cache::setTitle($file['name']);
 				
 				$html = $fileExport->getBody();		
 			} catch (\Exception $e) {
@@ -178,11 +179,11 @@ class GoogleDocs {
 	}
 	public static function getTable($id, $range)
 	{
-		$r = Boo::cache(['gdoc2article-getTable','Таблицы'], function ($id, $range) {
+		$r = Cache::exec('Таблицы', function ($id, $range) {
 			$service = GoogleDocs::getServiceSheets();
 			$srv = GoogleDocs::getServiceDrive();
-			$response = $service->spreadsheets_values->get($id, $range);
-			$values = $response->getValues();
+			//$response = $service->spreadsheets_values->get($id, $range);
+			//$values = $response->getValues();
 			
 			$descr = array();
 			$head = array();
@@ -191,7 +192,7 @@ class GoogleDocs {
 				$response = $service->spreadsheets_values->get($id, $range);
 				
 				$file = $srv->files->get($id);
-				Boo::setTitle($file['name'].' '.$range);
+				Cache::setTitle($file['name'].' '.$range);
 
 				$values = $response->getValues();
 				foreach ($values as $k => $row) {
@@ -274,8 +275,6 @@ class GoogleDocs {
 		} else {
 			$host = View::getHost();
 		}
-		
-		
 
 		$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'&amp;sa=[^"]*/','/',$html);
 		$html = preg_replace('/https:\/\/www.google.com\/url\?q=https{0,1}:\/\/'.$host.'([^"]*)&amp;sa=[^"]*/','$1',$html);
@@ -286,7 +285,6 @@ class GoogleDocs {
 			$vn = urldecode($v);
 			$html = str_replace($v,$vn, $html);
 		}
-		
 
 		$html = Rubrics::parse($html);
 		return $html;
