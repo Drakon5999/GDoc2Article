@@ -45,7 +45,7 @@ class GoogleDocs {
 	}
 	public static function getServiceDrive()
 	{
-	    return Once::exec(function(){
+	    return Cache::once(function(){
             $client = GoogleDocs::getClient();
             $service = new \Google_Service_Drive($client);
             return $service;
@@ -179,16 +179,18 @@ class GoogleDocs {
 	}
 	public static function getTable($id, $range)
 	{
-		$r = Cache::exec('Таблицы', function ($id, $range) {
+		$r = Cache::exec('Таблицы Google', function ($id, $range) {
 			$service = GoogleDocs::getServiceSheets();
 			$srv = GoogleDocs::getServiceDrive();
 			//$response = $service->spreadsheets_values->get($id, $range);
 			//$values = $response->getValues();
-			
+
 			$descr = array();
 			$head = array();
 			$data = array();
+			
 			try {
+
 				$response = $service->spreadsheets_values->get($id, $range);
 				
 				$file = $srv->files->get($id);
@@ -214,7 +216,9 @@ class GoogleDocs {
 						$data[] = $r;	
 					} 
 				}
-			} catch (\Exception $e) { }
+			} catch (\Exception $e) { 
+
+			}
 			$values = array('descr' => $descr, 'head' => $head, 'data' => $data);
 			return $values;
 		}, array($id, $range));
