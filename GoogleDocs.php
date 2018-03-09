@@ -13,6 +13,7 @@ use infrajs\rest\Rest;
 use infrajs\load\Load;
 use akiyatkin\boo\Cache;
 use akiyatkin\boo\Once;
+use akiyatkin\boo\BooCache;
 use infrajs\doc\Docx;
 use infrajs\excel\Xlsx;
 use adevelop\htmlcleaner\HtmlCleaner;
@@ -91,7 +92,7 @@ class GoogleDocs {
 		return $list;
 	}
 	public static function getFolder($id) {
-		return Cache::exec('Папки с документами', function ($id) {
+		return BooCache::exec('Папки с документами', function ($id) {
 			return GoogleDocs::_getFolder($id);
 		}, array($id));
 	}
@@ -159,7 +160,7 @@ class GoogleDocs {
 	public static function getArticle($id, $file = null)
 	{
 		// Get the API client and construct the service object.
-		return Cache::exec('Документы', function ($id) use ($file) {
+		return BooCache::exec('Документы', function ($id) use ($file) {
 			$service = GoogleDocs::getServiceDrive();
 			try {
 				
@@ -179,7 +180,7 @@ class GoogleDocs {
 	}
 	public static function getTable($id, $range)
 	{
-		$r = Cache::exec('Таблицы Google', function ($id, $range) {
+		$r = BooCache::exec('Таблицы Google', function ($id, $range) {
 			$service = GoogleDocs::getServiceSheets();
 			$srv = GoogleDocs::getServiceDrive();
 			//$response = $service->spreadsheets_values->get($id, $range);
