@@ -12,7 +12,7 @@ use infrajs\view\View;
 use infrajs\rest\Rest;
 use infrajs\load\Load;
 use akiyatkin\boo\Cache;
-use akiyatkin\boo\Once;
+use infrajs\once\Once;
 use akiyatkin\boo\BooCache;
 use infrajs\doc\Docx;
 use infrajs\excel\Xlsx;
@@ -46,7 +46,7 @@ class GoogleDocs {
 	}
 	public static function getServiceDrive()
 	{
-	    return Cache::once(function(){
+	    return Once::func(function(){
             $client = GoogleDocs::getClient();
             $service = new \Google_Service_Drive($client);
             return $service;
