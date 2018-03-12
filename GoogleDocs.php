@@ -141,7 +141,7 @@ class GoogleDocs {
 			$data['id'] = $name; 
 			$data['driveid'] = $file['id'];
 			$data['date'] = $fd['date'];
-			$data['body'] = GoogleDocs::getArticle($file['id']);
+			$data['body'] = GoogleDocs::getArticle($file['id'], $file);
 
 			preg_match_all("/src=\"([^\"]*)\"/", $data['body'], $match);
 			$data['images'] = $match[1];
