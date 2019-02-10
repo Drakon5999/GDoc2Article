@@ -37,6 +37,9 @@ return Rest::get( function () {
 		return Ans::html($html);
 }, function ($type, $id, $range) {
 		$data = GoogleDocs::getTable($id, $range);
+		if ($data && isset($_GET['reverse'])) {
+			$data['data'] = array_reverse($data['data']);
+		}
 		$ans = array();
 		$ans['data'] = $data;
 		return Ans::ret($ans);
