@@ -65,7 +65,7 @@ class GoogleDocs {
 		if(!$dir) return $list;
 
 		array_map(function ($file) use ($path, &$list) {
-			if ($file{0} == '.') return;
+			if ($file[0] == '.') return;
 			$file = Path::toutf($file);
 			$fd = Load::nameInfo($file);
 			if (!in_array($fd['ext'],['docx','tpl'])) return;
